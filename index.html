@@ -30,6 +30,51 @@
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(245, 213, 126, 0.12), transparent 18rem),
+      linear-gradient(120deg, rgba(255,255,255,0.06), transparent 24%, rgba(201,164,74,0.045) 48%, transparent 72%),
+      radial-gradient(ellipse at 18% 18%, rgba(201,164,74,0.11), transparent 32rem),
+      radial-gradient(ellipse at 82% 76%, rgba(245,245,240,0.055), transparent 34rem);
+    backdrop-filter: blur(2px) saturate(1.22) contrast(1.08);
+    -webkit-backdrop-filter: blur(2px) saturate(1.22) contrast(1.08);
+    filter: url(#liquid-distortion);
+    mix-blend-mode: screen;
+    opacity: 0.72;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(110deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(20deg, rgba(201,164,74,0.012) 0 1px, transparent 1px 34px);
+    opacity: 0.52;
+    mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 24rem, transparent 42rem);
+    -webkit-mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 24rem, transparent 42rem);
+    filter: url(#liquid-distortion-soft);
+  }
+
+  .liquid-glass-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.38;
+    mix-blend-mode: screen;
   }
 
   /* TERMINAL INTRO */
@@ -95,7 +140,7 @@
   .skip-btn:hover { color: var(--white); border-color: var(--white); }
 
   /* MAIN SITE */
-  #main { opacity: 0; transition: opacity 0.8s ease; }
+  #main { opacity: 0; transition: opacity 0.8s ease; position: relative; z-index: 1; }
   #main.visible { opacity: 1; }
 
   /* NAV */
@@ -334,6 +379,21 @@
 </style>
 </head>
 <body>
+<canvas class="liquid-glass-bg" id="liquid-glass-bg" aria-hidden="true"></canvas>
+<svg width="0" height="0" aria-hidden="true" focusable="false">
+  <filter id="liquid-distortion">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="7" result="noise">
+      <animate attributeName="baseFrequency" dur="14s" values="0.012 0.018;0.018 0.012;0.012 0.018" repeatCount="indefinite" />
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+  <filter id="liquid-distortion-soft">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018 0.024" numOctaves="1" seed="11" result="noise">
+      <animate attributeName="baseFrequency" dur="18s" values="0.018 0.024;0.012 0.03;0.018 0.024" repeatCount="indefinite" />
+    </feTurbulence>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" xChannelSelector="R" yChannelSelector="B" />
+  </filter>
+</svg>
 
 <button class="skip-btn" onclick="skipIntro()">skip ››</button>
 
@@ -552,6 +612,61 @@
 </div>
 
 <script>
+const liquidCanvas = document.getElementById('liquid-glass-bg');
+const liquidCtx = liquidCanvas.getContext('2d');
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let liquidDpr = Math.min(window.devicePixelRatio || 1, 2);
+const liquidPointer = {
+  x: window.innerWidth / 2,
+  y: window.innerHeight / 2,
+  tx: window.innerWidth / 2,
+  ty: window.innerHeight / 2,
+};
+
+function resizeLiquidGlass() {
+  liquidDpr = Math.min(window.devicePixelRatio || 1, 2);
+  liquidCanvas.width = Math.floor(window.innerWidth * liquidDpr);
+  liquidCanvas.height = Math.floor(window.innerHeight * liquidDpr);
+  liquidCanvas.style.width = window.innerWidth + 'px';
+  liquidCanvas.style.height = window.innerHeight + 'px';
+  liquidCtx.setTransform(liquidDpr, 0, 0, liquidDpr, 0, 0);
+}
+
+function drawLiquidGlass() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  liquidCtx.clearRect(0, 0, w, h);
+
+  const ease = prefersReducedMotion ? 1 : 0.08;
+  liquidPointer.x += (liquidPointer.tx - liquidPointer.x) * ease;
+  liquidPointer.y += (liquidPointer.ty - liquidPointer.y) * ease;
+
+  liquidCtx.save();
+  liquidCtx.globalCompositeOperation = 'screen';
+
+  const lens = liquidCtx.createRadialGradient(
+    liquidPointer.x, liquidPointer.y, 0,
+    liquidPointer.x, liquidPointer.y, Math.max(w, h) * 0.38
+  );
+  lens.addColorStop(0, 'rgba(245, 213, 126, 0.08)');
+  lens.addColorStop(0.34, 'rgba(255, 255, 255, 0.028)');
+  lens.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  liquidCtx.fillStyle = lens;
+  liquidCtx.fillRect(0, 0, w, h);
+
+  liquidCtx.restore();
+  requestAnimationFrame(drawLiquidGlass);
+}
+
+resizeLiquidGlass();
+window.addEventListener('resize', resizeLiquidGlass);
+window.addEventListener('pointermove', (e) => {
+  liquidPointer.tx = e.clientX;
+  liquidPointer.ty = e.clientY;
+  document.body.style.setProperty('--cursor-x', e.clientX + 'px');
+  document.body.style.setProperty('--cursor-y', e.clientY + 'px');
+});
+drawLiquidGlass();
 /* ── TERMINAL INTRO ── */
 const introLines = [
   { type: 'prompt', cmd: 'whoami' },
