@@ -9,6 +9,7 @@
 
   :root {
     --bg: #0a0a0a;
+    --bg-deep: #020202;
     --surface: #111111;
     --border: #222222;
     --border-mid: #333333;
@@ -23,7 +24,10 @@
   html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
 
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(circle at 50% 0%, rgba(54, 43, 18, 0.3), transparent 32rem),
+      radial-gradient(circle at 15% 80%, rgba(203, 166, 73, 0.045), transparent 28rem),
+      linear-gradient(140deg, var(--bg-deep), #080806 42%, #010101);
     color: var(--white);
     font-family: var(--mono);
     font-size: 16.8px;
@@ -40,15 +44,15 @@
     z-index: 0;
     pointer-events: none;
     background:
-      radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(245, 213, 126, 0.12), transparent 18rem),
-      linear-gradient(120deg, rgba(255,255,255,0.06), transparent 24%, rgba(201,164,74,0.045) 48%, transparent 72%),
-      radial-gradient(ellipse at 18% 18%, rgba(201,164,74,0.11), transparent 32rem),
-      radial-gradient(ellipse at 82% 76%, rgba(245,245,240,0.055), transparent 34rem);
-    backdrop-filter: blur(2px) saturate(1.22) contrast(1.08);
-    -webkit-backdrop-filter: blur(2px) saturate(1.22) contrast(1.08);
+      radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), rgba(238, 205, 126, 0.16), transparent 15rem),
+      conic-gradient(from var(--flow-angle, 0deg) at var(--cursor-x, 50%) var(--cursor-y, 50%), transparent, rgba(207, 169, 74, 0.072), transparent 32%, rgba(255,255,255,0.032), transparent 64%),
+      radial-gradient(ellipse at 20% 16%, rgba(201,164,74,0.13), transparent 34rem),
+      radial-gradient(ellipse at 82% 78%, rgba(204, 171, 89, 0.045), transparent 36rem);
+    backdrop-filter: blur(3px) saturate(1.32) contrast(1.12);
+    -webkit-backdrop-filter: blur(3px) saturate(1.32) contrast(1.12);
     filter: url(#liquid-distortion);
     mix-blend-mode: screen;
-    opacity: 0.72;
+    opacity: 0.78;
   }
 
   body::after {
@@ -58,11 +62,11 @@
     z-index: 0;
     pointer-events: none;
     background:
-      repeating-linear-gradient(110deg, rgba(255,255,255,0.022) 0 1px, transparent 1px 22px),
-      repeating-linear-gradient(20deg, rgba(201,164,74,0.012) 0 1px, transparent 1px 34px);
-    opacity: 0.52;
-    mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 24rem, transparent 42rem);
-    -webkit-mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 24rem, transparent 42rem);
+      repeating-linear-gradient(112deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 22px),
+      repeating-linear-gradient(20deg, rgba(245, 193, 70, 0.018) 0 1px, transparent 1px 34px);
+    opacity: 0.62;
+    mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 22rem, transparent 44rem);
+    -webkit-mask-image: radial-gradient(circle at var(--cursor-x, 50%) var(--cursor-y, 50%), #000 0 22rem, transparent 44rem);
     filter: url(#liquid-distortion-soft);
   }
 
@@ -73,7 +77,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: 0.38;
+    opacity: 0.74;
     mix-blend-mode: screen;
   }
 
@@ -380,6 +384,7 @@
 </head>
 <body>
 <canvas class="liquid-glass-bg" id="liquid-glass-bg" aria-hidden="true"></canvas>
+<script type="module" src="./liquid-ether.js"></script>
 <svg width="0" height="0" aria-hidden="true" focusable="false">
   <filter id="liquid-distortion">
     <feTurbulence type="fractalNoise" baseFrequency="0.012 0.018" numOctaves="2" seed="7" result="noise">
@@ -616,12 +621,42 @@ const liquidCanvas = document.getElementById('liquid-glass-bg');
 const liquidCtx = liquidCanvas.getContext('2d');
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let liquidDpr = Math.min(window.devicePixelRatio || 1, 2);
+let flowAngle = 0;
+let hasLiquidPointer = false;
 const liquidPointer = {
   x: window.innerWidth / 2,
   y: window.innerHeight / 2,
   tx: window.innerWidth / 2,
   ty: window.innerHeight / 2,
+  px: window.innerWidth / 2,
+  py: window.innerHeight / 2,
 };
+const flowParticles = [];
+
+function pushFlowParticle(x, y, lastX, lastY, speed) {
+  if (prefersReducedMotion) return;
+  const count = Math.min(8, Math.max(1, Math.ceil(speed / 18)));
+  const dx = x - lastX;
+  const dy = y - lastY;
+  const angle = Math.atan2(dy || 0.01, dx || 0.01);
+  const normal = angle + Math.PI / 2;
+
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 1 : i / (count - 1);
+    const wobble = Math.sin((flowAngle * 0.04) + i) * 5;
+    const slip = 0.08 + Math.random() * 0.16;
+    flowParticles.push({
+      x: lastX + dx * t + Math.cos(normal) * wobble,
+      y: lastY + dy * t + Math.sin(normal) * wobble,
+      vx: dx * slip / Math.max(count, 1),
+      vy: dy * slip / Math.max(count, 1),
+      r: 34 + Math.min(speed, 120) * 0.28 + Math.random() * 22,
+      life: 0.78,
+      decay: 0.008 + Math.random() * 0.006,
+    });
+  }
+  if (flowParticles.length > 220) flowParticles.splice(0, flowParticles.length - 220);
+}
 
 function resizeLiquidGlass() {
   liquidDpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -637,22 +672,71 @@ function drawLiquidGlass() {
   const h = window.innerHeight;
   liquidCtx.clearRect(0, 0, w, h);
 
-  const ease = prefersReducedMotion ? 1 : 0.08;
+  const ease = prefersReducedMotion ? 1 : 0.1;
   liquidPointer.x += (liquidPointer.tx - liquidPointer.x) * ease;
   liquidPointer.y += (liquidPointer.ty - liquidPointer.y) * ease;
+  flowAngle += prefersReducedMotion ? 0 : 0.14;
+  document.body.style.setProperty('--flow-angle', flowAngle + 'deg');
 
   liquidCtx.save();
   liquidCtx.globalCompositeOperation = 'screen';
 
+  const baseGlow = liquidCtx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
+  baseGlow.addColorStop(0, 'rgba(140, 113, 43, 0.046)');
+  baseGlow.addColorStop(0.55, 'rgba(205, 167, 74, 0.014)');
+  baseGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  liquidCtx.fillStyle = baseGlow;
+  liquidCtx.fillRect(0, 0, w, h);
+
+  for (let i = flowParticles.length - 1; i >= 0; i--) {
+    const p = flowParticles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.965;
+    p.vy *= 0.965;
+    p.life -= p.decay;
+
+    if (p.life <= 0) {
+      flowParticles.splice(i, 1);
+      continue;
+    }
+
+    const g = liquidCtx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+    g.addColorStop(0, `rgba(255, 232, 166, ${0.13 * p.life})`);
+    g.addColorStop(0.38, `rgba(208, 172, 82, ${0.058 * p.life})`);
+    g.addColorStop(1, 'rgba(208, 172, 82, 0)');
+    liquidCtx.fillStyle = g;
+    liquidCtx.beginPath();
+    liquidCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    liquidCtx.fill();
+  }
+
   const lens = liquidCtx.createRadialGradient(
     liquidPointer.x, liquidPointer.y, 0,
-    liquidPointer.x, liquidPointer.y, Math.max(w, h) * 0.38
+    liquidPointer.x, liquidPointer.y, Math.max(w, h) * 0.34
   );
-  lens.addColorStop(0, 'rgba(245, 213, 126, 0.08)');
-  lens.addColorStop(0.34, 'rgba(255, 255, 255, 0.028)');
+  lens.addColorStop(0, 'rgba(255, 238, 171, 0.13)');
+  lens.addColorStop(0.2, 'rgba(209, 173, 82, 0.07)');
+  lens.addColorStop(0.48, 'rgba(255, 255, 255, 0.026)');
   lens.addColorStop(1, 'rgba(255, 255, 255, 0)');
   liquidCtx.fillStyle = lens;
   liquidCtx.fillRect(0, 0, w, h);
+
+  liquidCtx.globalCompositeOperation = 'lighter';
+  liquidCtx.strokeStyle = 'rgba(255, 214, 112, 0.13)';
+  liquidCtx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const phase = flowAngle * 0.018 + i * 1.4;
+    const yDrift = Math.sin(phase) * 22;
+    liquidCtx.beginPath();
+    liquidCtx.moveTo(-80, h * (0.18 + i * 0.16) + yDrift);
+    liquidCtx.bezierCurveTo(
+      w * 0.28, h * 0.12 + Math.sin(phase + 0.7) * 38,
+      w * 0.66, h * 0.86 + Math.cos(phase + 1.2) * 34,
+      w + 80, h * (0.24 + i * 0.13) - yDrift
+    );
+    liquidCtx.stroke();
+  }
 
   liquidCtx.restore();
   requestAnimationFrame(drawLiquidGlass);
@@ -661,8 +745,27 @@ function drawLiquidGlass() {
 resizeLiquidGlass();
 window.addEventListener('resize', resizeLiquidGlass);
 window.addEventListener('pointermove', (e) => {
+  if (!hasLiquidPointer) {
+    hasLiquidPointer = true;
+    liquidPointer.x = e.clientX;
+    liquidPointer.y = e.clientY;
+    liquidPointer.tx = e.clientX;
+    liquidPointer.ty = e.clientY;
+    liquidPointer.px = e.clientX;
+    liquidPointer.py = e.clientY;
+    document.body.style.setProperty('--cursor-x', e.clientX + 'px');
+    document.body.style.setProperty('--cursor-y', e.clientY + 'px');
+    return;
+  }
+
+  const dx = e.clientX - liquidPointer.px;
+  const dy = e.clientY - liquidPointer.py;
+  const speed = Math.hypot(dx, dy);
   liquidPointer.tx = e.clientX;
   liquidPointer.ty = e.clientY;
+  pushFlowParticle(e.clientX, e.clientY, liquidPointer.px, liquidPointer.py, speed);
+  liquidPointer.px = e.clientX;
+  liquidPointer.py = e.clientY;
   document.body.style.setProperty('--cursor-x', e.clientX + 'px');
   document.body.style.setProperty('--cursor-y', e.clientY + 'px');
 });
