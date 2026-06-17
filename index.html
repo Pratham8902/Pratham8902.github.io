@@ -304,21 +304,230 @@
   .ys-nav-btn:disabled { opacity: 0.2; cursor: default; }
   .ys-count { font-size: 12px; color: #333; letter-spacing: 0.08em; }
 
-  /* PROJECTS */
-  .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
-  .project-card {
-    background: var(--bg); padding: 32px;
-    transition: background 0.2s;
-    border-left: 3px solid transparent;
+  /* PROJECTS — DVD/projector showcase */
+  #projects { max-width: 1180px; }
+
+  .proj-stage {
+    display: grid; grid-template-columns: 1fr 280px; gap: 28px;
+    align-items: stretch; min-height: 460px;
   }
-  .project-card:hover { background: var(--surface); border-left-color: rgba(201,164,74,0.18); }
-  .project-num { font-size: 13.2px; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 20px; }
-  .project-title { font-family: var(--serif); font-size: 24px; font-style: italic; color: var(--white); margin-bottom: 12px; line-height: 1.3; }
-  .project-desc { font-size: 15.6px; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
-  .project-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    font-size: 13.2px; color: var(--gold); padding: 3px 8px;
-    border: 0.5px solid rgba(201,164,74,0.15); letter-spacing: 0.04em;
+
+  /* Left: screen + projector */
+  .proj-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; position: relative; }
+  .proj-screen-wrap {
+    position: relative; flex: 1; min-height: 320px;
+    border-radius: 8px; overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(201,164,74,0.06), transparent 60%),
+      linear-gradient(180deg, #0d0d0d, #060606);
+    border: 0.5px solid var(--border-mid);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.6);
+  }
+  .proj-screen {
+    position: absolute; inset: 0; padding: 26px 30px;
+    display: grid; grid-template-rows: auto 1fr auto; gap: 14px;
+    transition: opacity 0.45s ease, filter 0.45s ease;
+  }
+  .proj-screen.changing { opacity: 0; filter: blur(6px) brightness(1.6); }
+  .proj-screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px);
+    mix-blend-mode: overlay; opacity: 0.5;
+  }
+  .proj-screen::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  .proj-meta-row {
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+  .proj-meta-num {
+    font-family: var(--mono); font-size: 12.6px; letter-spacing: 0.18em;
+    color: var(--gold); padding: 3px 10px;
+    border: 0.5px solid rgba(201,164,74,0.3); border-radius: 2px;
+  }
+  .proj-meta-title {
+    font-family: var(--serif); font-style: italic; font-size: clamp(22px, 2.6vw, 30px);
+    color: var(--white); line-height: 1.15;
+  }
+  .proj-meta-tag {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .proj-canvas {
+    position: relative; z-index: 1; min-height: 0;
+    border-radius: 6px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .proj-canvas svg { width: 100%; height: 100%; display: block; }
+
+  .proj-info { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 10px; }
+  .proj-method { font-size: 14.4px; color: #cbcbcb; line-height: 1.65; max-width: 70ch; }
+  .proj-bottom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .proj-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .proj-tag {
+    font-family: var(--mono); font-size: 11.5px; color: var(--gold);
+    padding: 3px 9px; border: 0.5px solid rgba(201,164,74,0.22);
+    border-radius: 2px; letter-spacing: 0.05em;
+  }
+  .proj-link {
+    font-family: var(--mono); font-size: 12.5px; color: var(--gold);
+    text-decoration: none; letter-spacing: 0.06em;
+    border-bottom: 0.5px solid rgba(201,164,74,0.4);
+    padding-bottom: 1px; transition: color 0.2s, border-color 0.2s;
+  }
+  .proj-link:hover { color: #f8df9b; border-color: var(--gold); }
+  .proj-link.disabled { color: var(--muted); border-color: var(--border); cursor: default; pointer-events: none; }
+
+  /* Projector body */
+  .proj-projector {
+    position: relative; height: 56px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .proj-projector-body {
+    position: relative; width: 180px; height: 44px;
+    background: linear-gradient(180deg, #1c1c1c, #0a0a0a);
+    border: 0.5px solid var(--border-mid); border-radius: 6px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+  }
+  .proj-projector-lens {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f8df9b 0 18%, #c9a44a 35%, #2a1f0a 80%);
+    box-shadow: 0 0 14px rgba(201,164,74,0.5), inset 0 0 6px rgba(0,0,0,0.6);
+  }
+  .proj-projector.hot .proj-projector-lens {
+    box-shadow: 0 0 22px rgba(248,223,155,0.85), inset 0 0 6px rgba(0,0,0,0.4);
+  }
+  .proj-projector-slot {
+    width: 56px; height: 6px; background: #050505;
+    border-radius: 2px; border: 0.5px solid #1a1a1a;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+  }
+  .proj-projector-led {
+    width: 5px; height: 5px; border-radius: 50%; background: #5fd06a;
+    box-shadow: 0 0 6px #5fd06a;
+  }
+  .proj-light-cone {
+    position: absolute; left: 50%; bottom: 50px;
+    width: 0; height: 0; pointer-events: none; z-index: 0;
+    border-left: 70px solid transparent; border-right: 70px solid transparent;
+    border-top: 0 solid rgba(248,223,155,0);
+    transform: translateX(-50%);
+    transition: border-top-width 0.5s ease, border-top-color 0.5s ease, opacity 0.4s;
+    filter: blur(8px); opacity: 0;
+  }
+  .proj-light-cone.hot {
+    border-top-width: 280px;
+    border-top-color: rgba(248,223,155,0.22);
+    opacity: 1;
+  }
+
+  /* Right: DVD shelf */
+  .proj-shelf {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: linear-gradient(180deg, rgba(255,255,255,0.012), transparent);
+    overflow-y: auto; max-height: 100%;
+  }
+  .proj-shelf::-webkit-scrollbar { width: 5px; }
+  .proj-shelf::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+
+  .proj-dvd {
+    position: relative; cursor: pointer;
+    height: 84px; flex-shrink: 0;
+    border-radius: 4px; overflow: hidden;
+    border: 0.5px solid var(--border-mid);
+    background: linear-gradient(135deg, var(--dvd-a, #1a1a1a), var(--dvd-b, #0c0c0c));
+    transition: transform 0.25s cubic-bezier(.2,.8,.2,1), border-color 0.2s, box-shadow 0.25s;
+    display: flex; align-items: stretch;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  }
+  .proj-dvd:hover {
+    transform: translateX(-6px) rotateY(-4deg);
+    border-color: rgba(201,164,74,0.45);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.55);
+  }
+  .proj-dvd.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 12px 26px rgba(0,0,0,0.6);
+  }
+  .proj-dvd.ejecting {
+    transform: translateX(-12px) rotateY(-12deg) scale(1.04);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+  }
+  .proj-dvd-spine {
+    width: 8px; flex-shrink: 0;
+    background: linear-gradient(180deg, var(--gold), #8a6f2e);
+    box-shadow: inset -1px 0 0 rgba(0,0,0,0.4);
+  }
+  .proj-dvd-cover {
+    flex: 1; padding: 10px 12px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .proj-dvd-cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 110% -10%, var(--dvd-glow, rgba(201,164,74,0.18)), transparent 60%);
+    pointer-events: none;
+  }
+  .proj-dvd-num {
+    font-family: var(--mono); font-size: 10.5px; color: var(--gold);
+    letter-spacing: 0.2em;
+  }
+  .proj-dvd-title {
+    font-family: var(--serif); font-style: italic; font-size: 14.5px;
+    color: var(--white); line-height: 1.2; max-width: 100%;
+  }
+  .proj-dvd-disc {
+    position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    width: 60px; height: 60px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, #0a0a0a 0 16%, transparent 17%),
+      conic-gradient(from 0deg, #d8c279, #9c7d36, #f8df9b, #c9a44a, #d8c279);
+    border: 0.5px solid rgba(201,164,74,0.5);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    opacity: 0.6; transition: right 0.4s cubic-bezier(.2,.8,.2,1), opacity 0.3s;
+  }
+  .proj-dvd.ejecting .proj-dvd-disc { right: -38px; opacity: 1; }
+
+  /* Flying disc element */
+  .proj-flying-disc {
+    position: fixed; pointer-events: none; z-index: 60;
+    width: 60px; height: 60px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 50% 50%, #0a0a0a 0 16%, transparent 17%),
+      conic-gradient(from 0deg, #d8c279, #9c7d36, #f8df9b, #c9a44a, #d8c279);
+    border: 0.5px solid rgba(201,164,74,0.6);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.6), 0 0 16px rgba(248,223,155,0.4);
+    opacity: 0; visibility: hidden;
+    will-change: transform, opacity;
+  }
+  .proj-flying-disc.flying { opacity: 1; visibility: visible; }
+  @keyframes discSpin { to { transform: var(--disc-base-transform, translate(0,0)) rotate(720deg); } }
+
+  /* Reveal animation for screen content */
+  @keyframes scanReveal {
+    0% { clip-path: inset(0 0 100% 0); }
+    100% { clip-path: inset(0 0 0 0); }
+  }
+  .proj-screen.revealing > * { animation: scanReveal 0.55s cubic-bezier(.2,.8,.2,1) both; }
+
+  @media (max-width: 820px) {
+    section#projects { height: auto; min-height: 100vh; padding-top: 80px; }
+    .proj-stage { grid-template-columns: 1fr; }
+    .proj-shelf {
+      flex-direction: row; max-height: none; overflow-x: auto; overflow-y: hidden;
+    }
+    .proj-dvd { width: 220px; height: 76px; }
+    .proj-dvd:hover { transform: translateY(-4px); }
   }
 
   /* EXPERIENCE */
@@ -373,7 +582,7 @@
     nav { padding: 0 20px; }
     .nav-links { gap: 16px; }
     section { padding: 40px 20px; }
-    .about-grid, .projects-grid, .contact-inner { grid-template-columns: 1fr; gap: 40px; }
+    .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 40px; }
     footer { flex-direction: column; gap: 8px; text-align: center; padding: 40px 20px; }
   }
 
@@ -642,47 +851,24 @@
   <!-- PROJECTS -->
   <section id="projects">
     <div class="section-label">03 — Projects</div>
-    <div class="projects-grid fade-up">
-      <div class="project-card">
-        <div class="project-num">01</div>
-        <div class="project-title">Laptop Price Predictor</div>
-        <p class="project-desc">One of my first projects using machine learning to predict laptop prices based on specifications.</p>
-        <p class="project-desc">Used ML and models to create a predictive model for laptop prices.</p>
-        <a href="https://drive.google.com/file/d/1TzlXCbbmpK4cC0OKtEx33scNq1qqInb-/view" target="_blank" rel="noopener noreferrer"> Read here →</a>
-        <div class="project-tags">
-          <span class="tag">Python</span><span class="tag">ML</span><span class="tag">Regression</span>
+    <div class="proj-stage fade-up">
+      <div class="proj-left">
+        <div class="proj-screen-wrap">
+          <div class="proj-screen" id="proj-screen"></div>
+        </div>
+        <div class="proj-light-cone" id="proj-light-cone"></div>
+        <div class="proj-projector" id="proj-projector">
+          <div class="proj-projector-body">
+            <span class="proj-projector-led"></span>
+            <span class="proj-projector-slot"></span>
+            <span class="proj-projector-lens"></span>
+          </div>
         </div>
       </div>
-      <div class="project-card">
-        <div class="project-num">02</div>
-        <div class="project-title">WheelGuide</div>
-        <p class="project-desc">The time i decided to explore Android Studio and decided to never go back.</p>
-        <p class="project-desc">An app to help specially abled individuals identify places with accessibility features.</p>
-        <a href="https://github.com/Pratham8902/WheelGuide" target="_blank" rel="noopener noreferrer"> View on GitHub →</a>
-        <div class="project-tags">
-          <span class="tag">Android</span><span class="tag">Java</span><span class="tag">Firebase</span>
-        </div>
-      </div>
-      <div class="project-card">
-        <div class="project-num">03</div>
-        <div class="project-title">DocAssist: AI Doctor's Assistant</div>
-        <p class="project-desc">The project that made me a patent-holder.</p>
-        <p class="project-desc">An AI assistant designed to help doctors with patient data management and management dashboard.</p>
-        <div class="project-tags">
-          <span class="tag">LLM</span><span class="tag">Data Science</span><span class="tag">Front-end</span>
-        </div>
-      </div>
-      <div class="project-card">
-        <div class="project-num">04</div>
-        <div class="project-title">Fin-Agent</div>
-        <p class="project-desc">The internship project which raised eyebrows and gave me applauses.</p>
-        <p class="project-desc">An AI agent designed for financial analysis and decision-making.</p>
-        <div class="project-tags">
-          <span class="tag">Prompt Eng.</span><span class="tag">Benchmarking</span><span class="tag">Palantir</span>
-        </div>
-      </div>
+      <div class="proj-shelf" id="proj-shelf" role="listbox" aria-label="Projects"></div>
     </div>
   </section>
+  <div class="proj-flying-disc" id="proj-flying-disc" aria-hidden="true"></div>
 
   <!-- EXPERIENCE -->
   <section id="experience">
@@ -946,6 +1132,248 @@ function updateCard() {
 }
 
 setTimeout(() => showLine(0), 600);
+
+/* ══════════════════════════════════════════════════════════════
+   PROJECT SHOWCASE — DVD shelf + projector
+   ══════════════════════════════════════════════════════════════ */
+const PROJECTS = [
+  {
+    id: 'laptop',
+    num: '01',
+    title: 'Laptop Price Predictor',
+    tag: 'My first ML',
+    methodology: "A regression model that estimates laptop prices from raw spec sheets — RAM, GPU, brand, screen, weight. I cleaned the dataset, engineered features, benchmarked a handful of regressors, and shipped the best one with a Streamlit interface.",
+    tech: ['Python', 'pandas', 'scikit-learn', 'Regression'],
+    link: { href: 'https://drive.google.com/file/d/1TzlXCbbmpK4cC0OKtEx33scNq1qqInb-/view', label: 'Read paper →' },
+    accent: '#7BA8E8', accent2: '#2c456b'
+  },
+  {
+    id: 'wheelguide',
+    num: '02',
+    title: 'WheelGuide',
+    tag: 'Accessibility-first Android',
+    methodology: "An Android app helping specially-abled users find places with verified accessibility features. Crowd-sourced ratings, geo-tagged points of interest, and Firebase-backed sync — built end-to-end in Android Studio with Java.",
+    tech: ['Android', 'Java', 'Firebase', 'Maps'],
+    link: { href: 'https://github.com/Pratham8902/WheelGuide', label: 'View on GitHub →' },
+    accent: '#5fd06a', accent2: '#1f5826'
+  },
+  {
+    id: 'docassist',
+    num: '03',
+    title: "DocAssist: AI Doctor's Assistant",
+    tag: 'Patent-holder',
+    methodology: "An AI-powered dashboard that helps doctors review patient records, surface anomalies in vitals and history, and suggest next steps. The work behind this became my granted patent.",
+    tech: ['LLM', 'Data Science', 'Front-end', 'Healthcare'],
+    link: null,
+    accent: '#e76b6b', accent2: '#6b2424'
+  },
+  {
+    id: 'finagent',
+    num: '04',
+    title: 'Fin-Agent',
+    tag: 'Internship MVP',
+    methodology: "An LLM agent for financial analysis — pulls market data, reasons over filings, and produces decision-grade summaries. Heavy on prompt engineering, evaluation harnesses, and Palantir for the data plumbing.",
+    tech: ['Prompt Eng.', 'Benchmarking', 'Palantir', 'LLM'],
+    link: null,
+    accent: '#c9a44a', accent2: '#6b521e'
+  }
+];
+
+(function initProjects() {
+  const shelfEl = document.getElementById('proj-shelf');
+  const screenEl = document.getElementById('proj-screen');
+  const projectorEl = document.getElementById('proj-projector');
+  const coneEl = document.getElementById('proj-light-cone');
+  const flyingDiscEl = document.getElementById('proj-flying-disc');
+  if (!shelfEl || !screenEl) return;
+
+  let projIdx = 0;
+  let animating = false;
+
+  function hexToRgba(hex, a) {
+    const h = hex.replace('#','');
+    const r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function visual(p) {
+    const a = p.accent, a2 = p.accent2;
+    if (p.id === 'laptop') {
+      const dots = [[60,135],[80,128],[95,120],[115,118],[130,108],[150,98],[170,92],[185,82],[200,78],[220,66],[240,58],[260,48],[275,42]]
+        .map((d,i)=>`<circle cx="${d[0]}" cy="${d[1]+(i%3-1)*5}" r="2.4" fill="${a}" opacity="${0.6+(i%3)*0.15}"/>`).join('');
+      return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+        <defs><linearGradient id="lpG" x1="0" x2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${a2}"/></linearGradient></defs>
+        <line x1="40" y1="150" x2="300" y2="150" stroke="#444" stroke-width="0.6"/>
+        <line x1="40" y1="20" x2="40" y2="150" stroke="#444" stroke-width="0.6"/>
+        <text x="42" y="14" fill="#888" font-size="8" font-family="monospace">price ($)</text>
+        <text x="248" y="165" fill="#888" font-size="8" font-family="monospace">spec score →</text>
+        ${dots}
+        <line x1="50" y1="142" x2="290" y2="32" stroke="url(#lpG)" stroke-width="2"/>
+        <rect x="200" y="26" width="92" height="32" rx="3" fill="#0d0d0d" stroke="${a}" stroke-opacity="0.55"/>
+        <text x="208" y="40" fill="#888" font-size="7" font-family="monospace">PREDICTION</text>
+        <text x="208" y="54" fill="${a}" font-size="13" font-family="monospace" font-weight="700">$ 1,287</text>
+      </svg>`;
+    }
+    if (p.id === 'wheelguide') {
+      const hLines = Array.from({length:6}).map((_,i)=>`<line x1="124" y1="${30+i*18}" x2="196" y2="${30+i*18}" stroke="${a}" stroke-opacity="0.18"/>`).join('');
+      const vLines = Array.from({length:5}).map((_,i)=>`<line x1="${130+i*15}" y1="22" x2="${130+i*15}" y2="142" stroke="${a}" stroke-opacity="0.18"/>`).join('');
+      return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+        <text x="20" y="40" fill="${a}" font-size="10" font-family="monospace" opacity="0.85">accessible.places</text>
+        <text x="20" y="54" fill="#888" font-size="8" font-family="monospace">12 within 1 km</text>
+        <line x1="20" y1="60" x2="100" y2="60" stroke="#333"/>
+        <text x="20" y="80" fill="#666" font-size="8" font-family="monospace">→ ramps</text>
+        <text x="20" y="94" fill="#666" font-size="8" font-family="monospace">→ elevators</text>
+        <text x="20" y="108" fill="#666" font-size="8" font-family="monospace">→ wide doors</text>
+        <rect x="120" y="14" width="80" height="152" rx="9" fill="#0a0a0a" stroke="${a}" stroke-opacity="0.5"/>
+        <rect x="124" y="22" width="72" height="120" fill="#0d130d"/>
+        ${hLines}${vLines}
+        <circle cx="142" cy="56" r="5" fill="${a}"/><circle cx="142" cy="56" r="2" fill="#0a0a0a"/>
+        <circle cx="172" cy="78" r="5" fill="${a}"/><circle cx="172" cy="78" r="2" fill="#0a0a0a"/>
+        <circle cx="156" cy="108" r="5" fill="${a}"/><circle cx="156" cy="108" r="2" fill="#0a0a0a"/>
+        <rect x="132" y="148" width="56" height="14" rx="3" fill="${a2}"/>
+        <text x="138" y="158" fill="${a}" font-size="8" font-family="monospace">♿ verified</text>
+      </svg>`;
+    }
+    if (p.id === 'docassist') {
+      const bars = [12,28,18,34,40,26,46].map((v,i)=>`<rect x="${172+i*20}" y="${94-v}" width="12" height="${v}" fill="${a}" opacity="${0.4+i*0.08}"/>`).join('');
+      return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+        <rect x="10" y="10" width="300" height="20" rx="2" fill="#141010" stroke="#2a1818"/>
+        <text x="18" y="24" fill="${a}" font-size="9" font-family="serif" font-style="italic">DocAssist · Patient Dashboard</text>
+        <circle cx="298" cy="20" r="3" fill="${a}"/>
+        <rect x="10" y="38" width="140" height="60" rx="3" fill="#0e0a0a" stroke="${a}" stroke-opacity="0.35"/>
+        <text x="18" y="50" fill="#888" font-size="8" font-family="monospace">VITALS</text>
+        <text x="18" y="68" fill="${a}" font-size="18" font-family="monospace" font-weight="700">72 bpm</text>
+        <polyline points="18,90 36,90 42,80 48,98 56,72 64,90 90,90 96,82 102,90 142,90" fill="none" stroke="${a}" stroke-width="1.4"/>
+        <rect x="160" y="38" width="150" height="60" rx="3" fill="#0e0a0a" stroke="${a}" stroke-opacity="0.35"/>
+        <text x="168" y="50" fill="#888" font-size="8" font-family="monospace">7-DAY TREND</text>
+        ${bars}
+        <rect x="10" y="106" width="300" height="58" rx="3" fill="#0e0a0a" stroke="#444"/>
+        <circle cx="22" cy="120" r="3" fill="${a}"/>
+        <text x="32" y="124" fill="#cdcdcd" font-size="9" font-family="monospace">Suggested follow-up: review sleep panel</text>
+        <text x="32" y="138" fill="#666" font-size="8" font-family="monospace">Confidence 0.87 · 3 supporting signals</text>
+        <text x="32" y="152" fill="#666" font-size="8" font-family="monospace">→ schedule labs · prescribe rest · log note</text>
+      </svg>`;
+    }
+    if (p.id === 'finagent') {
+      const candles = [[14,38,18],[24,46,22],[34,42,30],[44,54,16],[54,50,28],[64,58,20],[74,52,30],[84,60,22],[94,68,18],[104,62,28],[114,70,20],[124,76,16],[134,68,28],[144,80,18],[154,72,30],[164,82,22],[174,76,30],[184,86,20]]
+        .map(([x,y,h],i)=>`<rect x="${10+x}" y="${y+18}" width="6" height="${h}" fill="${i%2===0?a:'#5a5a5a'}" opacity="0.85"/>`).join('');
+      return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+        <rect x="10" y="10" width="300" height="14" fill="#0d0a04"/>
+        <text x="14" y="20" fill="${a}" font-size="8" font-family="monospace">▲ AAPL 192.40 +1.2%   ▼ TSLA 244.10 -0.8%   ▲ NVDA 502.31 +2.4%</text>
+        <rect x="10" y="32" width="200" height="100" fill="#08080a" stroke="#1a1a1a"/>
+        ${candles}
+        <rect x="216" y="32" width="94" height="100" fill="#0a0a08" stroke="${a}" stroke-opacity="0.45"/>
+        <text x="222" y="44" fill="${a}" font-size="7" font-family="monospace">FIN-AGENT ▸</text>
+        <text x="222" y="58" fill="#cdcdcd" font-size="6.5" font-family="monospace">$ analyze TSLA Q3</text>
+        <text x="222" y="70" fill="#888" font-size="6.5" font-family="monospace">→ pulling 10-Q…</text>
+        <text x="222" y="82" fill="#888" font-size="6.5" font-family="monospace">→ peer benchmark…</text>
+        <text x="222" y="94" fill="#888" font-size="6.5" font-family="monospace">→ thesis: HOLD</text>
+        <text x="222" y="106" fill="${a}" font-size="6.5" font-family="monospace">conf 0.71</text>
+        <text x="222" y="124" fill="#666" font-size="6" font-family="monospace">_</text>
+        <rect x="10" y="140" width="300" height="24" fill="#0d0a04"/>
+        <text x="14" y="155" fill="#888" font-size="8" font-family="monospace">Run #2114 · evals 14/14 ✓ · latency 2.3s</text>
+      </svg>`;
+    }
+    return '';
+  }
+
+  function renderScreen(p) {
+    const link = p.link
+      ? `<a class="proj-link" href="${p.link.href}" target="_blank" rel="noopener">${p.link.label}</a>`
+      : `<span class="proj-link disabled">private build</span>`;
+    screenEl.innerHTML = `
+      <div class="proj-meta-row">
+        <span class="proj-meta-num">${p.num}</span>
+        <span class="proj-meta-title">${p.title}</span>
+        <span class="proj-meta-tag">· ${p.tag}</span>
+      </div>
+      <div class="proj-canvas">${visual(p)}</div>
+      <div class="proj-info">
+        <p class="proj-method">${p.methodology}</p>
+        <div class="proj-bottom">
+          <div class="proj-tags">${p.tech.map(t=>`<span class="proj-tag">${t}</span>`).join('')}</div>
+          ${link}
+        </div>
+      </div>`;
+  }
+
+  function renderShelf() {
+    shelfEl.innerHTML = '';
+    PROJECTS.forEach((p, i) => {
+      const dvd = document.createElement('button');
+      dvd.className = 'proj-dvd' + (i === projIdx ? ' active' : '');
+      dvd.type = 'button';
+      dvd.dataset.idx = i;
+      dvd.style.setProperty('--dvd-a', p.accent2);
+      dvd.style.setProperty('--dvd-b', '#0a0a0a');
+      dvd.style.setProperty('--dvd-glow', hexToRgba(p.accent, 0.28));
+      dvd.innerHTML = `
+        <div class="proj-dvd-spine"></div>
+        <div class="proj-dvd-cover">
+          <span class="proj-dvd-num">${p.num}</span>
+          <span class="proj-dvd-title">${p.title}</span>
+          <span class="proj-dvd-disc"></span>
+        </div>`;
+      dvd.addEventListener('click', () => selectProject(i));
+      shelfEl.appendChild(dvd);
+    });
+  }
+
+  function selectProject(idx) {
+    if (animating || idx === projIdx) return;
+    animating = true;
+    const newP = PROJECTS[idx];
+    const dvdEl = shelfEl.children[idx];
+    dvdEl.classList.add('ejecting');
+
+    // FLIP-fly the disc from DVD to projector slot
+    const slotEl = projectorEl.querySelector('.proj-projector-slot');
+    const discEl = dvdEl.querySelector('.proj-dvd-disc');
+    const sr = discEl.getBoundingClientRect();
+    const er = slotEl.getBoundingClientRect();
+    const sx = sr.left + sr.width/2 - 30;
+    const sy = sr.top + sr.height/2 - 30;
+    const ex = er.left + er.width/2 - 30;
+    const ey = er.top + er.height/2 - 30;
+
+    flyingDiscEl.style.transition = 'none';
+    flyingDiscEl.style.transform = `translate(${sx}px, ${sy}px) rotate(0deg) scale(1)`;
+    flyingDiscEl.classList.add('flying');
+    void flyingDiscEl.offsetWidth; // force reflow
+    flyingDiscEl.style.transition = 'transform 0.65s cubic-bezier(.4,.05,.2,1), opacity 0.4s';
+    flyingDiscEl.style.transform = `translate(${ex}px, ${ey}px) rotate(720deg) scale(0.42)`;
+
+    setTimeout(() => screenEl.classList.add('changing'), 240);
+    setTimeout(() => {
+      projectorEl.classList.add('hot');
+      coneEl.classList.add('hot');
+    }, 460);
+    setTimeout(() => {
+      renderScreen(newP);
+      screenEl.classList.remove('changing');
+      screenEl.classList.add('revealing');
+      setTimeout(() => screenEl.classList.remove('revealing'), 650);
+    }, 720);
+    setTimeout(() => {
+      flyingDiscEl.classList.remove('flying');
+      flyingDiscEl.style.transition = 'none';
+      Array.from(shelfEl.children).forEach((el,i) => {
+        el.classList.remove('ejecting','active');
+        if (i === idx) el.classList.add('active');
+      });
+      projIdx = idx;
+      animating = false;
+    }, 820);
+  }
+
+  renderShelf();
+  renderScreen(PROJECTS[0]);
+  // Warm up the projector shortly after load
+  setTimeout(() => {
+    projectorEl.classList.add('hot');
+    coneEl.classList.add('hot');
+  }, 1800);
+})();
 
 /* ══════════════════════════════════════════════════════════════
    CHATBOT — "mini-Pratham"
