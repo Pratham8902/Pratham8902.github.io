@@ -380,6 +380,151 @@
     .about-grid, .projects-grid, .contact-inner { grid-template-columns: 1fr; gap: 40px; }
     footer { flex-direction: column; gap: 8px; text-align: center; padding: 40px 20px; }
   }
+
+  /* ── CHATBOT (mini-me) ── */
+  #chat-fab {
+    position: fixed; bottom: 24px; right: 24px; z-index: 120;
+    width: 58px; height: 58px; border-radius: 50%;
+    background: var(--gold); color: #0a0a0a;
+    border: 0.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; opacity: 0; visibility: hidden;
+    transform: translateY(12px) scale(0.9);
+    transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 0 0 0 rgba(201,164,74,0.5);
+  }
+  #chat-fab.ready { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+  #chat-fab:hover { background: #d8b65e; box-shadow: 0 10px 34px rgba(0,0,0,0.5), 0 0 0 6px rgba(201,164,74,0.12); }
+  #chat-fab svg { width: 26px; height: 26px; }
+  #chat-fab .fab-close { display: none; }
+  #chat-fab.open .fab-chat { display: none; }
+  #chat-fab.open .fab-close { display: block; }
+  #chat-fab .pulse {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid var(--gold); animation: chatPulse 2.6s ease-out infinite;
+    pointer-events: none;
+  }
+  #chat-fab.open .pulse, #chat-fab.engaged .pulse { display: none; }
+  @keyframes chatPulse {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  #chat-panel {
+    position: fixed; bottom: 94px; right: 24px; z-index: 120;
+    width: min(380px, calc(100vw - 32px));
+    height: min(560px, calc(100vh - 130px));
+    background: rgba(13,13,13,0.97);
+    backdrop-filter: blur(14px) saturate(1.2);
+    -webkit-backdrop-filter: blur(14px) saturate(1.2);
+    border: 0.5px solid var(--border-mid);
+    border-radius: 12px; overflow: hidden;
+    display: flex; flex-direction: column;
+    opacity: 0; visibility: hidden; transform: translateY(16px) scale(0.97);
+    transform-origin: bottom right;
+    transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  #chat-panel.open { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+
+  .chat-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; border-bottom: 0.5px solid var(--border);
+    background: linear-gradient(180deg, rgba(201,164,74,0.06), transparent);
+    flex-shrink: 0;
+  }
+  .chat-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--gold), #8a6f2e);
+    color: #0a0a0a; display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 18px;
+  }
+  .chat-h-text { display: flex; flex-direction: column; line-height: 1.2; }
+  .chat-h-name { font-size: 14.4px; color: var(--white); letter-spacing: 0.02em; }
+  .chat-h-status { font-size: 12px; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+  .chat-h-status::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: #5fd06a; box-shadow: 0 0 6px #5fd06a;
+  }
+  .chat-h-close {
+    margin-left: auto; background: transparent; border: none; cursor: pointer;
+    color: var(--muted); font-size: 20px; line-height: 1; padding: 4px 8px;
+    border-radius: 4px; transition: color 0.2s, background 0.2s;
+  }
+  .chat-h-close:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 18px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    scroll-behavior: smooth;
+  }
+  .chat-messages::-webkit-scrollbar { width: 6px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+  .chat-messages::-webkit-scrollbar-track { background: transparent; }
+
+  .chat-msg { max-width: 84%; font-size: 14.4px; line-height: 1.6; }
+  .chat-msg.bot {
+    align-self: flex-start; color: #ddd;
+    background: var(--surface); border: 0.5px solid var(--border);
+    padding: 11px 14px; border-radius: 4px 14px 14px 14px;
+  }
+  .chat-msg.user {
+    align-self: flex-end; color: #0a0a0a;
+    background: var(--gold);
+    padding: 11px 14px; border-radius: 14px 4px 14px 14px;
+  }
+  .chat-msg a { color: var(--gold); text-decoration: underline; }
+  .chat-msg.user a { color: #0a0a0a; }
+  .chat-msg strong { color: var(--white); font-weight: 700; }
+  .chat-msg.user strong { color: #0a0a0a; }
+
+  .chat-typing { display: flex; gap: 4px; align-items: center; padding: 4px 2px; }
+  .chat-typing span {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--muted);
+    animation: chatDot 1.2s infinite ease-in-out;
+  }
+  .chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+  .chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+  @keyframes chatDot { 0%,60%,100%{ transform: translateY(0); opacity:0.4;} 30%{ transform: translateY(-5px); opacity:1;} }
+
+  .chat-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 14px; flex-shrink: 0; }
+  .chat-chip {
+    font-family: var(--mono); font-size: 12.5px; color: var(--gold);
+    background: transparent; border: 0.5px solid rgba(201,164,74,0.28);
+    padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    transition: all 0.18s; white-space: nowrap;
+  }
+  .chat-chip:hover { background: rgba(201,164,74,0.1); border-color: var(--gold); }
+
+  .chat-input-row {
+    display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px;
+    border-top: 0.5px solid var(--border); flex-shrink: 0;
+    background: rgba(255,255,255,0.012);
+  }
+  .chat-input {
+    flex: 1; resize: none; max-height: 90px; min-height: 22px;
+    background: transparent; border: none; outline: none;
+    color: var(--white); font-family: var(--mono); font-size: 14.4px;
+    line-height: 1.5; padding: 4px 0;
+  }
+  .chat-input::placeholder { color: var(--muted); }
+  .chat-send {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--gold); color: #0a0a0a; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .chat-send:hover { transform: scale(1.06); }
+  .chat-send:disabled { opacity: 0.35; cursor: default; transform: none; }
+  .chat-send svg { width: 17px; height: 17px; }
+
+  @media (max-width: 480px) {
+    #chat-panel {
+      right: 12px; left: 12px; width: auto;
+      bottom: 84px; height: min(70vh, calc(100vh - 110px));
+    }
+    #chat-fab { bottom: 16px; right: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -478,22 +623,23 @@
       <div class="ys-left" id="ys-list"></div>
       <div class="ys-right">
 
-    <div class="ys-card fade-up" id="ys-card">
-      <div class="ys-big-year" id="ys-big-year"></div>
-      <div class="ys-tag" id="ys-tag"></div>
-      <div class="ys-title" id="ys-title"></div>
-      <div class="ys-body" id="ys-body"></div>
-      <div class="ys-weight-row">
-        <div class="ys-dots" id="ys-dots"></div>
-        <div class="ys-weight-label" id="ys-wlabel"></div>
-      </div>
-      </div>
-    </div>
+        <div class="ys-card fade-up" id="ys-card">
+          <div class="ys-big-year" id="ys-big-year"></div>
+          <div class="ys-tag" id="ys-tag"></div>
+          <div class="ys-title" id="ys-title"></div>
+          <div class="ys-body" id="ys-body"></div>
+          <div class="ys-weight-row">
+            <div class="ys-dots" id="ys-dots"></div>
+            <div class="ys-weight-label" id="ys-wlabel"></div>
+          </div>
+        </div>
 
-    <div class="ys-nav">
-      <button class="ys-nav-btn" id="ys-prev">← prev</button>
-      <span class="ys-count" id="ys-count"></span>
-      <button class="ys-nav-btn" id="ys-next">next →</button>
+        <div class="ys-nav">
+          <button class="ys-nav-btn" id="ys-prev">← prev</button>
+          <span class="ys-count" id="ys-count"></span>
+          <button class="ys-nav-btn" id="ys-next">next →</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -615,6 +761,37 @@
     <span>Designed in the terminal. Built with obsession.</span>
   </footer>
 </div>
+
+<!-- CHATBOT (mini-me) -->
+<div id="chat-panel" role="dialog" aria-label="Chat with mini-Pratham" aria-hidden="true">
+  <div class="chat-header">
+    <div class="chat-avatar">P</div>
+    <div class="chat-h-text">
+      <span class="chat-h-name">mini-Pratham</span>
+      <span class="chat-h-status">online · ask me anything</span>
+    </div>
+    <button class="chat-h-close" id="chat-close" aria-label="Close chat">×</button>
+  </div>
+  <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+  <div class="chat-chips" id="chat-chips">
+    <button class="chat-chip">Tech stack?</button>
+    <button class="chat-chip">Tell me about your projects</button>
+    <button class="chat-chip">Your education?</button>
+    <button class="chat-chip">Hobbies?</button>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask about Pratham…" aria-label="Type your message"></textarea>
+    <button class="chat-send" id="chat-send" aria-label="Send message" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+    </button>
+  </div>
+</div>
+
+<button id="chat-fab" aria-label="Open chat with mini-Pratham">
+  <span class="pulse"></span>
+  <svg class="fab-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <svg class="fab-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+</button>
 
 <script>
 const liquidCanvas = document.getElementById('liquid-glass-bg');
@@ -828,6 +1005,7 @@ function launchSite() {
   setTimeout(initAnimations, 200);
   setTimeout(startTitleCycle, 500);
   setTimeout(renderScrubber, 300);
+  setTimeout(() => { const fab = document.getElementById('chat-fab'); if (fab) fab.classList.add('ready'); }, 1200);
 }
 
 function skipIntro() { launchSite(); }
@@ -925,6 +1103,199 @@ function updateCard() {
 }
 
 setTimeout(() => showLine(0), 600);
+
+/* ══════════════════════════════════════════════════════════════
+   CHATBOT — "mini-Pratham"
+   Works out of the box with a built-in local brain (no API key).
+   To upgrade to a real LLM, deploy chatbot-worker.js to Cloudflare
+   Workers (free) and paste its URL into CHAT_API_URL below.
+   ══════════════════════════════════════════════════════════════ */
+const CHAT_API_URL = ""; // e.g. "https://mini-pratham.your-name.workers.dev"
+
+// Knowledge that powers both the LLM system prompt and the local brain.
+const PERSONA = `You are "mini-Pratham", a friendly, witty AI version of Pratham Kambli on his personal portfolio site. You answer visitors' questions about Pratham in the first person ("I"), with warmth and a touch of dry humor. Keep answers concise (1-4 sentences) unless asked for detail. Never invent facts that aren't below; if you don't know, say so and point them to his LinkedIn or GitHub. Don't discuss being an AI unless asked.
+
+FACTS ABOUT PRATHAM:
+- Role: AI Engineer at TWG Global (2025–present). It started as an internship and turned into a part-time role. He ships LLM features, runs evaluations, and writes production-grade prompts.
+- Education: Bachelor's in AI & Data Science at Mumbai University (graduated 2024, GPA 9.1/10) with an Honors specialization in Blockchain. Master's degree at the University of Southern California (USC), graduated 2026 (Fight On!). He was also a Residential Assistant at USC.
+- Patent: Holds a granted patent from his final-year project (the DocAssist AI Doctor's Assistant work).
+- Research: Published his first research paper in 2022.
+- Sweet spot: Where NLP / LLMs meet real-world impact — prompts that work, models that surprise, systems that help people.
+- Tech stack: Python, Machine Learning, NLP, LLMs, prompt engineering, model evaluation & benchmarking, Palantir, Android (Java), Firebase, and front-end work.
+- Projects:
+  1) Laptop Price Predictor — an early ML project predicting laptop prices from specs (Python, ML, regression).
+  2) WheelGuide — an Android app helping specially-abled people find places with accessibility features (Android, Java, Firebase).
+  3) DocAssist: AI Doctor's Assistant — an AI assistant for patient-data management with a dashboard; this is the project that made him a patent-holder (LLM, Data Science, front-end).
+  4) Fin-Agent — an AI agent for financial analysis and decision-making, built during his internship (prompt engineering, benchmarking, Palantir).
+- Hobbies & vibe: voracious reader (often non-tech books that loop back to tech), runs on coffee, always has infinite browser tabs open, and is a serial side-project launcher.
+- Contact: Email (prathamkambli8902@gmail.com), LinkedIn (linkedin.com/in/pratham-kambli), GitHub (github.com/Pratham8902). Use the contact section of the site to reach out.
+`;
+
+(function initChat() {
+  const fab = document.getElementById('chat-fab');
+  const panel = document.getElementById('chat-panel');
+  const closeBtn = document.getElementById('chat-close');
+  const messagesEl = document.getElementById('chat-messages');
+  const chipsEl = document.getElementById('chat-chips');
+  const input = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('chat-send');
+  if (!fab || !panel) return;
+
+  const history = [];
+  let greeted = false;
+  let busy = false;
+
+  function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function format(text) {
+    return esc(text)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(https?:\/\/[^\s)]+)|(\b(?:linkedin\.com|github\.com)\/[^\s)]+)/g,
+        m => `<a href="${m.startsWith('http') ? m : 'https://' + m}" target="_blank" rel="noopener">${m}</a>`)
+      .replace(/\n/g, '<br>');
+  }
+  function scrollDown() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+
+  function addMessage(text, who) {
+    const el = document.createElement('div');
+    el.className = 'chat-msg ' + who;
+    el.innerHTML = format(text);
+    messagesEl.appendChild(el);
+    scrollDown();
+    return el;
+  }
+  function showTyping() {
+    const el = document.createElement('div');
+    el.className = 'chat-msg bot';
+    el.innerHTML = '<div class="chat-typing"><span></span><span></span><span></span></div>';
+    messagesEl.appendChild(el);
+    scrollDown();
+    return el;
+  }
+
+  function openChat() {
+    panel.classList.add('open');
+    fab.classList.add('open', 'engaged');
+    panel.setAttribute('aria-hidden', 'false');
+    if (!greeted) {
+      greeted = true;
+      setTimeout(() => addMessage("Hey! I'm mini-Pratham 👋 — ask me about my projects, tech stack, education, or what I do for fun.", 'bot'), 250);
+    }
+    setTimeout(() => input.focus(), 300);
+  }
+  function closeChat() {
+    panel.classList.remove('open');
+    fab.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+  }
+
+  fab.addEventListener('click', () => panel.classList.contains('open') ? closeChat() : openChat());
+  closeBtn.addEventListener('click', closeChat);
+
+  input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 90) + 'px';
+    sendBtn.disabled = input.value.trim() === '';
+  });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  sendBtn.addEventListener('click', send);
+  chipsEl.addEventListener('click', e => {
+    const chip = e.target.closest('.chat-chip');
+    if (chip) { input.value = chip.textContent; send(); }
+  });
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text || busy) return;
+    busy = true; sendBtn.disabled = true;
+    addMessage(text, 'user');
+    history.push({ role: 'user', content: text });
+    input.value = ''; input.style.height = 'auto';
+    chipsEl.style.display = 'none';
+
+    const typing = showTyping();
+    try {
+      const reply = CHAT_API_URL ? await askLLM() : await askLocal(text);
+      typing.remove();
+      addMessage(reply, 'bot');
+      history.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      typing.remove();
+      addMessage("Hmm, my brain hiccuped. Try again, or reach Pratham on **LinkedIn** (linkedin.com/in/pratham-kambli).", 'bot');
+    } finally {
+      busy = false;
+      sendBtn.disabled = input.value.trim() === '';
+    }
+  }
+
+  async function askLLM() {
+    const res = await fetch(CHAT_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: PERSONA,
+        messages: history.slice(-10)
+      })
+    });
+    if (!res.ok) throw new Error('api ' + res.status);
+    const data = await res.json();
+    return (data.reply || data.content || '').trim() || "I didn't catch that — mind rephrasing?";
+  }
+
+  /* ── Local brain: intent matching over the same facts ── */
+  function askLocal(raw) {
+    return new Promise(resolve => {
+      const reply = localAnswer(raw);
+      setTimeout(() => resolve(reply), 450 + Math.random() * 400);
+    });
+  }
+
+  const INTENTS = [
+    { keys: ['project', 'built', 'build', 'made', 'work on', 'portfolio', 'app '],
+      a: "I've built a few things I'm proud of:\n• **DocAssist** — an AI doctor's assistant for patient-data management (this one got me a **patent**!)\n• **Fin-Agent** — an AI agent for financial analysis, built during my internship\n• **WheelGuide** — an Android app helping specially-abled folks find accessible places\n• **Laptop Price Predictor** — an early ML project\nWant detail on any one of them?" },
+    { keys: ['docassist', 'doctor', 'patent', 'medical', 'healthcare'],
+      a: "**DocAssist** is an AI assistant that helps doctors manage patient data through a dashboard. It was my final-year project — and it earned me a granted **patent**. Easily one of my proudest builds." },
+    { keys: ['fin-agent', 'finagent', 'finance', 'financial', 'palantir', 'agent'],
+      a: "**Fin-Agent** is an AI agent for financial analysis and decision-making that I built during my internship. It leaned heavily on prompt engineering, benchmarking, and Palantir — and it raised a few eyebrows (the good kind)." },
+    { keys: ['wheelguide', 'android', 'accessibility', 'accessible', 'disab'],
+      a: "**WheelGuide** is an Android app (Java + Firebase) that helps specially-abled individuals find places with accessibility features. It was my deep-dive into Android Studio." },
+    { keys: ['laptop', 'price', 'predict', 'regression'],
+      a: "The **Laptop Price Predictor** was one of my first ML projects — predicting laptop prices from their specs using regression in Python. Humble, but it hooked me on ML." },
+    { keys: ['tech', 'stack', 'skill', 'language', 'tools', 'know', 'technolog', 'framework', 'code'],
+      a: "My toolkit: **Python**, Machine Learning, **NLP & LLMs**, prompt engineering, model evaluation & benchmarking, Palantir, Android (Java), Firebase, and front-end work. My sweet spot is where NLP meets real-world impact." },
+    { keys: ['education', 'study', 'studied', 'degree', 'university', 'college', 'school', 'gpa', 'usc', 'mumbai', 'graduate', 'master', 'bachelor'],
+      a: "I did my Bachelor's in **AI & Data Science** at Mumbai University (graduated 2024, **9.1/10 GPA**) with an Honors specialization in Blockchain. Then a Master's at **USC** (University of Southern California), graduating in 2026. Fight On! 🟥🟨" },
+    { keys: ['experience', 'job', 'work', 'career', 'twg', 'engineer', 'company', 'employ', 'intern'],
+      a: "I'm currently an **AI Engineer at TWG Global** (since 2025 — it started as an internship and became part-time). I ship LLM features, run evaluations, and write prompts that survive production. I was also a Residential Assistant at USC." },
+    { keys: ['research', 'paper', 'publish', 'publication'],
+      a: "I published my first research paper in 2022 — the whole experience: abstract, citations, peer review, all of it. Research is a big part of how I think." },
+    { keys: ['hobby', 'hobbies', 'fun', 'free time', 'outside', 'interest', 'enjoy', 'coffee', 'read'],
+      a: "Outside of work I'm a voracious reader (usually non-tech books that somehow loop back to tech), I run on **coffee**, keep an unreasonable number of browser tabs open, and I'm a serial side-project launcher." },
+    { keys: ['contact', 'reach', 'email', 'hire', 'linkedin', 'github', 'connect', 'get in touch'],
+      a: "Best ways to reach me: **email** (prathamkambli8902@gmail.com), **LinkedIn** (linkedin.com/in/pratham-kambli), and **GitHub** (github.com/Pratham8902). There's also a contact section right here on the site." },
+    { keys: ['who are you', 'about yourself', 'yourself', 'your bio', 'background', 'introduce'],
+      a: "I'm **Pratham Kambli** — an AI Engineer who's worn a lot of hats across academia, research, and startups. I love working where NLP and LLMs meet real-world impact. Patent-holder, published researcher, and a USC grad." },
+    { keys: ['journey', 'timeline', 'story', 'path'],
+      a: "Quick timeline: started my AI & Data Science degree (2021) → first published paper (2022) → Blockchain honors (2023) → patent + graduated + got into USC (2024) → TWG internship & became an RA (2025) → graduated from USC (2026). Busy few years!" },
+    { keys: [' hi ', ' hey ', ' hello ', ' yo ', ' sup ', ' hiya '],
+      a: "Hey there! 👋 Ask me anything about Pratham — projects, tech stack, education, experience, or hobbies." },
+    { keys: ['thank', ' cool ', ' nice ', 'awesome'],
+      a: "Anytime! Anything else you'd like to know about my work or background?" }
+  ];
+
+  function localAnswer(raw) {
+    const q = ' ' + raw.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
+    let best = null, bestScore = 0;
+    for (const intent of INTENTS) {
+      let score = 0;
+      for (const k of intent.keys) if (q.includes(k)) score += k.trim().length; // longer / more specific match wins
+      if (score > bestScore) { bestScore = score; best = intent; }
+    }
+    if (best && bestScore > 0) return best.a;
+    return "Good question! I can tell you about my **projects**, **tech stack**, **education**, **experience**, **research**, or **hobbies**. What are you curious about? (For anything else, find me on LinkedIn: linkedin.com/in/pratham-kambli)";
+  }
+})();
 </script>
 </body>
 </html>
