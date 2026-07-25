@@ -1298,6 +1298,16 @@ const PROJECTS = [
     accent: '#a97bde', accent2: '#4a2a6b'
   },
   {
+    id: 'azganesh',
+    num: '07',
+    title: 'azganesh.org',
+    tag: 'Eco Ganesh store',
+    methodology: "A full-stack e-commerce site for water-soluble Ganesh idols — product catalog with size filters and price sorting, Square payments with live webhook verification, real-time inventory that decrements on purchase, and a Hostinger admin dashboard for stock and orders.",
+    tech: ['React', 'Node.js', 'Express', 'SQLite', 'Payments'],
+    link: { href: 'https://azganesh.org/', label: 'View site →' },
+    accent: '#7a9e6a', accent2: '#2f4528'
+  },
+  {
     id: 'finagent',
     num: '04',
     title: 'Fin-Agent',
@@ -1465,6 +1475,28 @@ const PROJECTS = [
         <text x="14" y="172" fill="#666" font-size="7" font-family="monospace">built for the family business</text>
       </svg>`;
     }
+    if (p.id === 'azganesh') {
+      const idols = [
+        { y: 40, name: 'ASTHAVAINAYAK · 18"', price: '$115', stock: '5 left' },
+        { y: 78, name: 'Maisuri · 24"', price: '$169', stock: '2 left' },
+        { y: 116, name: 'Maisuri Aasan · 20"', price: '$129', stock: '2 left' }
+      ].map(c => `
+        <rect x="14" y="${c.y}" width="292" height="30" rx="3" fill="#0b100a" stroke="${a}" stroke-opacity="0.35"/>
+        <circle cx="29" cy="${c.y+15}" r="8" fill="${a2}" stroke="${a}" stroke-opacity="0.6"/>
+        <text x="26" y="${c.y+18}" fill="${a}" font-size="9" font-family="monospace">ॐ</text>
+        <text x="46" y="${c.y+14}" fill="#cdcdcd" font-size="8" font-family="monospace">${c.name}</text>
+        <text x="46" y="${c.y+26}" fill="${a}" font-size="7" font-family="monospace">${c.stock} · eco clay</text>
+        <text x="268" y="${c.y+19}" fill="${a}" font-size="9" font-family="monospace" font-weight="700">${c.price}</text>
+      `).join('');
+      return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
+        <rect x="10" y="10" width="300" height="18" rx="2" fill="#0c120c" stroke="#243024"/>
+        <text x="18" y="23" fill="${a}" font-size="9" font-family="monospace">azganesh.org</text>
+        <text x="230" y="23" fill="#888" font-size="7" font-family="monospace">SHOP · LIVE</text>
+        ${idols}
+        <text x="14" y="160" fill="#666" font-size="7" font-family="monospace">React · Express · Square · inventory</text>
+        <text x="14" y="172" fill="#666" font-size="7" font-family="monospace">water-soluble idols · admin dashboard</text>
+      </svg>`;
+    }
     if (p.id === 'bitium') {
       return `<svg viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet">
         <rect x="14" y="12" width="180" height="126" rx="3" fill="#07100e" stroke="${a}" stroke-opacity="0.4"/>
@@ -1615,7 +1647,8 @@ FACTS ABOUT PRATHAM:
   3) DocAssist: AI Doctor's Assistant — an AI assistant for patient-data management with a dashboard; this is the project that made him a patent-holder (LLM, Data Science, front-end).
   4) Fin-Agent — an AI agent for financial analysis and decision-making, built during his internship (prompt engineering, benchmarking, Palantir).
   5) pratham.homes — a real estate listing platform built for my dad's Mumbai-based realty business (Next.js, TypeScript, Prisma, Supabase, Mapbox).
-  6) Bitium Stratagem 2k23 — extended and resubmitted my face-recognition attendance system for a follow-up hackathon, iterating on the same Django/OpenCV/dlib architecture.
+  6) azganesh.org (Eco Ganesh) — a full-stack e-commerce store for water-soluble Ganesh idols with React/Express/SQLite, Square payments, real-time inventory, size/price filters, and a Hostinger admin dashboard.
+  7) Bitium Stratagem 2k23 — extended and resubmitted my face-recognition attendance system for a follow-up hackathon, iterating on the same Django/OpenCV/dlib architecture.
 - Hobbies & vibe: Gaming, Cooking, learning and trying new things, love for Mumbai, takes time to get to know, but once you do, he’s a loyal friend. He has a dry sense of humor and enjoys witty banter.
 - Contact: Email (prathamkambli8902@gmail.com), LinkedIn (linkedin.com/in/pratham-kambli), GitHub (github.com/Pratham8902). Use the contact section of the site to reach out.
 `;
@@ -1742,7 +1775,9 @@ FACTS ABOUT PRATHAM:
 
   const INTENTS = [
     { keys: ['project', 'built', 'build', 'made', 'work on', 'portfolio', 'app '],
-      a: "I've built a few things I'm proud of:\n• **DocAssist** — an AI doctor's assistant for patient-data management (this one got me a **patent**!)\n• **Fin-Agent** — an AI agent for financial analysis, built during my internship\n• **WheelGuide** — an Android app helping specially-abled folks find accessible places\n• **Laptop Price Predictor** — an early ML project\nWant detail on any one of them?" },
+      a: "I've built a few things I'm proud of:\n• **DocAssist** — an AI doctor's assistant for patient-data management (this one got me a **patent**!)\n• **Fin-Agent** — an AI agent for financial analysis, built during my internship\n• **azganesh.org** — Eco Ganesh, a full-stack store for water-soluble idols with payments + inventory\n• **pratham.homes** — a real estate platform for my dad's Mumbai realty business\n• **WheelGuide** — an Android app helping specially-abled folks find accessible places\n• **Laptop Price Predictor** — an early ML project\nWant detail on any one of them?" },
+    { keys: ['azganesh', 'eco ganesh', 'ganesh', 'idol'],
+      a: "**azganesh.org** (Eco Ganesh) is a full-stack e-commerce store I built for water-soluble Ganesh idols — React + Express + SQLite, Square payments with webhook verification, real-time inventory, and a Hostinger admin dashboard for stock and orders." },
     { keys: ['docassist', 'doctor', 'patent', 'medical', 'healthcare'],
       a: "**DocAssist** is an AI assistant that helps doctors manage patient data through a dashboard. It was my final-year project — and it earned me a granted **patent**. Easily one of my proudest builds." },
     { keys: ['fin-agent', 'finagent', 'finance', 'financial', 'palantir', 'agent'],
